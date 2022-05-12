@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 /**
@@ -12,6 +13,7 @@ import lombok.Data;
 
 @Data
 public class User {
+    @TableId(value = "id")
     private Integer id;
     private String username;
     private String password;

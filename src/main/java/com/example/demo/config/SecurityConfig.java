@@ -24,20 +24,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     MyUserDetailService myUserDetailService;
 
-   /* @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String encode = passwordEncoder.encode("123");
-        auth.inMemoryAuthentication().withUser("wangzhe")
-                .password(encode)
-                        .roles("admin");
-    }
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }*/
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -46,6 +33,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.logout().logoutUrl("/logout").logoutSuccessUrl("/logoutSuccess.html");
+
         http.exceptionHandling().accessDeniedPage("/unauth.html");
 
         http.formLogin()
@@ -53,13 +42,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/user/login") //表单登录按钮路径
                 .defaultSuccessUrl("/test/index") //登录成功的默认跳转路径
                 .and().authorizeHttpRequests()
-                .antMatchers("/hello", "/user/login", "/login.html","/user/users").permitAll() //放行路径,需要添加登录页面到放行路径中
+                .antMatchers("/hello", "/user/login", "/login.html","logoutSuccess.html").permitAll() //放行路径,需要添加登录页面到放行路径中
                 .antMatchers("/test/authority").hasAuthority("admin")
                 .antMatchers("/test/authorities").hasAnyAuthority("admin", "girl")
                 .antMatchers("/test/authority").hasRole("producer")
                 .antMatchers("/test/authorities").hasAnyRole("producer", "consumer")
                 .anyRequest().authenticated()
                 .and().csrf().disable();//关闭csrf 防护
+
     }
 
     @Bean

@@ -39,7 +39,7 @@ public class MyUserDetailService implements UserDetailsService {
         }
 
 
-        List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList("admin,ROLE_consumer,ROLE_producer");
+        List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList("admin,ROLE_admin,ROLE_manager");
         return new User(user.getUsername(), new BCryptPasswordEncoder().encode(user.getPassword()),authorities);
     }
 }
