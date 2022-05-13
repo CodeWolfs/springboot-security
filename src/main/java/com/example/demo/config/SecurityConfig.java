@@ -9,10 +9,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 /**
  * @ClassName SecurityConfig
- * @Description TODO
+ * @Description securityConfig 配置类
  * @Author WangZhe
  * @Date 2022/4/14 14:40
  * @Version 1.0
@@ -24,6 +28,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     MyUserDetailService myUserDetailService;
 
+    @Autowired
+    DataSource dataSource;
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        return jdbcTokenRepository;
+    }
+
 
 
     @Override
@@ -33,7 +47,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.logout().logoutUrl("/logout").logoutSuccessUrl("/logoutSuccess.html");
 
         http.exceptionHandling().accessDeniedPage("/unauth.html");
 
@@ -42,12 +55,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/user/login") //表单登录按钮路径
                 .defaultSuccessUrl("/test/index") //登录成功的默认跳转路径
                 .and().authorizeHttpRequests()
-                .antMatchers("/hello", "/user/login", "/login.html","logoutSuccess.html").permitAll() //放行路径,需要添加登录页面到放行路径中
+                .antMatchers("/hello", "/user/login", "/login.html","logoutSuccess.html","/logoutSuccess.html").permitAll() //放行路径,需要添加登录页面到放行路径中
                 .antMatchers("/test/authority").hasAuthority("admin")
                 .antMatchers("/test/authorities").hasAnyAuthority("admin", "girl")
                 .antMatchers("/test/authority").hasRole("producer")
                 .antMatchers("/test/authorities").hasAnyRole("producer", "consumer")
                 .anyRequest().authenticated()
+                .and().logout().logoutUrl("/logout").logoutSuccessUrl("/logoutSuccess.html")
+                .and().rememberMe().tokenRepository(persistentTokenRepository())//设置自动登录，数据库操作对象
+                .tokenValiditySeconds(60) //设置token的有效时间，单位秒
+                .userDetailsService(userDetailsService())
                 .and().csrf().disable();//关闭csrf 防护
 
     }
